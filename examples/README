@@ -1,0 +1,18 @@
+This document provides a guide to using the examples provided to verify the
+successful installation of the distribution. For each example provided, copy
+the directory to any location of your choice and run LAMMPS by replacing
+"lmp < bondcreate.in" with "/path/to/exectuable/lmp_mpi < bondcreate.in" 
+in your simulations. (quotes only for emphasis)
+
+The directories "test1" and "test2" contain test cases that verify whether the
+executable successfully implements the angle criterion check before performing
+bond creation.
+
+The directories "300K" and "2500K" are simulations for which results have been
+reported in the paper. In both these cases, the initial structure is given by
+initial.data and the final structure is given by final.data. 
+
+To run any crosslinking simulations, please label your initial structure as
+1.data. Intermediate structures will be generated as "x.data", where "x" is the
+current cycle number of the algorithm. Please see the individual input files 
+for further details.
