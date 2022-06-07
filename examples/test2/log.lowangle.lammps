@@ -1,0 +1,118 @@
+LAMMPS (19 Oct 2016)
+#Input file for LAMMPS simulation that reads in an initial structure
+#and creates a bond between different sets of atoms, depending on
+#distance and angle cutoffs provided
+
+units          real
+atom_style     full
+boundary       f f p
+
+pair_style     lj/charmm/coul/charmm 10.0 12.0
+dielectric     1.0
+#The special_bonds command requires the extra keyword
+special_bonds  lj/coul 0.0 0.0 1.0 extra 10000 dihedral yes
+bond_style     harmonic
+angle_style    harmonic
+dihedral_style harmonic
+improper_style harmonic
+
+#The initial structure is initial.data
+read_data      initial.data
+  orthogonal box = (6 -2 0) to (16.84 4.5 12.4878)
+  1 by 1 by 1 MPI processor grid
+  reading atoms ...
+  80 atoms
+  scanning bonds ...
+  1003 = max bonds/atom
+  scanning angles ...
+  1003 = max angles/atom
+  scanning dihedrals ...
+  1008 = max dihedrals/atom
+  scanning impropers ...
+  1001 = max impropers/atom
+  reading bonds ...
+  100 bonds
+  reading angles ...
+  160 angles
+  reading dihedrals ...
+  240 dihedrals
+  reading impropers ...
+  40 impropers
+  3 = max # of 1-2 neighbors
+  4 = max # of 1-3 neighbors
+  10007 = max # of special neighbors
+timestep       1
+thermo_style   custom step etotal ke pe ebond eangle edihed eimp
+thermo         1
+
+#Neighbor list is modified to prevent bonding between unsaturated atoms
+#within the same molecule
+neigh_modify   exclude molecule all
+
+#The distance cutoff is 0.4 nm and the angle is provided in the format {LowAngle} {HighAngle}
+#The system consists of 4 chains and bonds are created between different sets of chains
+#depending on the angle cutoff used
+
+#If the angle values are low, like {20} and {180}, bonds will be created between
+#chains beside  each other and the final structure is lowangle.data
+#If the angle values are increased to {100} and {180}, bonds will be created between
+#chain facing each other and the final structure is highangle.data
+fix	       f7 all bond/create 1 1 1 4 20 180 1 iparam 3 1 jparam 3 1
+run            1
+Neighbor list info ...
+  2 neighbor list requests
+  update every 1 steps, delay 10 steps, check yes
+  max neighbors/atom: 2000, page size: 100000
+  master list distance cutoff = 14
+  ghost atom cutoff = 14
+  binsize = 7 -> bins = 2 1 2
+Memory usage per processor = 1653.18 Mbytes
+Step TotEng KinEng PotEng E_bond E_angle E_dihed E_impro 
+       0    1090.5057            0    1090.5057    207.47591    4.3129708 3.469447e-14 3.9968029e-13 
+       1    17536.731            0    17536.731    16655.201    4.3129708 3.469447e-14 3.9968029e-13 
+WARNING: Bond/angle/dihedral extent > half of periodic box length (../domain.cpp:906)
+Loop time of 0.115833 on 1 procs for 1 steps with 80 atoms
+
+Performance: 0.746 ns/day, 32.176 hours/ns, 8.633 timesteps/s
+1.7% CPU use with 1 MPI tasks x no OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 0.00023699 | 0.00023699 | 0.00023699 |   0.0 |  0.20
+Bond    | 7.7963e-05 | 7.7963e-05 | 7.7963e-05 |   0.0 |  0.07
+Neigh   | 0.00040388 | 0.00040388 | 0.00040388 |   0.0 |  0.35
+Comm    | 2.1935e-05 | 2.1935e-05 | 2.1935e-05 |   0.0 |  0.02
+Output  | 4.3154e-05 | 4.3154e-05 | 4.3154e-05 |   0.0 |  0.04
+Modify  | 0.11504    | 0.11504    | 0.11504    |   0.0 | 99.31
+Other   |            | 1.287e-05  |            |       |  0.01
+
+Nlocal:    80 ave 80 max 80 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:    184 ave 184 max 184 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:    4866 ave 4866 max 4866 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+FullNghs:  9832 ave 9832 max 9832 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 9832
+Ave neighs/atom = 122.9
+Ave special neighs/atom = 13.25
+Neighbor list builds = 1
+Dangerous builds = 0
+unfix          f7
+
+#Neighbor list returns to original for regular dynamics (not run in this simulation)
+neigh_modify   exclude none
+
+#The final structure is final.data and can be compared to lowangle.data and highangle.data
+write_data     final.data
+Neighbor list info ...
+  1 neighbor list requests
+  update every 1 steps, delay 10 steps, check yes
+  max neighbors/atom: 2000, page size: 100000
+  master list distance cutoff = 14
+  ghost atom cutoff = 14
+  binsize = 7 -> bins = 2 1 2
+Total wall time: 0:00:00
