@@ -1,0 +1,62 @@
+#Input file for LAMMPS simulation that reads in an initial structure
+#and creates a bond between eligible atoms based on distance and angle
+#cutoffs provided.
+
+clear
+units          real
+atom_style     full
+boundary       p p p
+
+pair_style     lj/charmm/coul/charmm 10.0 12.0
+dielectric     1.0
+special_bonds  lj/coul 0.0 0.0 1.0 extra 10000 dihedral yes
+bond_style     harmonic
+angle_style    harmonic
+dihedral_style harmonic
+improper_style harmonic
+
+#The simulation runs for 240 cycles, but this can be varied by the user
+#The initial structure should be labeled 1.data
+variable       LoopVar loop 1 240
+variable       remainder equal ${LoopVar}%4
+shell          sh addlines.sh ${LoopVar}
+
+#Every 4th cycle, use larger cutoff, else use smaller cutoff
+if "${remainder} == 1" then &
+    "variable probVar equal 0.1" &
+    "variable cutVar equal 5" &
+    "variable runVar equal 20000" &
+    "variable lowAngle equal 60" &
+    "variable highAngle equal 180" &
+else &
+    "variable probVar equal 1" &
+    "variable cutVar equal 2.85" &
+    "variable runVar equal 20000" &
+    "variable lowAngle equal 90" &
+    "variable highAngle equal 89"
+
+read_data      ${LoopVar}.data
+timestep       0.25
+thermo_style   custom step etotal ke pe temp vol density pxx pyy pzz lx ly lz
+thermo         1
+
+dump	       d3 all custom 1000 ${LoopVar}.dump id type x y z vx vy vz
+
+#Neighbor list is modified to prevent bonding between unsaturated atoms
+#within the same molecule
+neigh_modify   exclude molecule all
+fix	       f7 all bond/create 1 1 1 ${cutVar} ${lowAngle} ${highAngle} 1 prob ${probVar} 100000 iparam 3 2 jparam 3 2 atype 1 dtype 1 itype 1
+run            1
+unfix          f7
+
+#Neighbor list returns to original for regular dynamics
+neigh_modify   exclude none
+#Min_modify regulates the distance moved within each minimization step
+min_modify     dmax 0.05
+minimize       1.0e-6 1.0e-8 10000 100000
+fix            f3 all npt temp 300 300 100 x 1.0 1.0 1000 y 1.0 1.0 1000 z 1.0 1.0 1000 couple xy
+run            ${runVar}
+next           LoopVar
+write_data     ${LoopVar}.data
+unfix          f3
+jump           bondcreate.in
