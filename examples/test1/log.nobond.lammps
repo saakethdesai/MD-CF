@@ -1,0 +1,108 @@
+LAMMPS (19 Oct 2016)
+#Input file for LAMMPS simulation that reads in an initial structure
+#and creates a bond between eligible atoms based on distance and angle
+#cutoffs provided
+
+units          real
+atom_style     full
+boundary       f f f
+
+
+pair_style     lj/charmm/coul/charmm 10.0 12.0
+dielectric     1.0
+
+#The special_bonds command requires the extra keyword
+special_bonds  lj/coul 0.0 0.0 1.0 extra 10000 dihedral yes
+bond_style     harmonic
+angle_style    harmonic
+dihedral_style harmonic
+improper_style harmonic
+
+#The initial structure is initial.data
+read_data      initial.data
+  orthogonal box = (6 -2 4) to (15 2 8)
+  1 by 1 by 1 MPI processor grid
+  reading atoms ...
+  6 atoms
+  scanning bonds ...
+  1001 = max bonds/atom
+  scanning angles ...
+  1001 = max angles/atom
+  reading bonds ...
+  4 bonds
+  reading angles ...
+  2 angles
+  2 = max # of 1-2 neighbors
+  1 = max # of 1-3 neighbors
+  10002 = max # of special neighbors
+timestep       1
+thermo_style   custom step etotal ke pe ebond eangle edihed eimp
+thermo         1
+
+#Atom IDs 2 and 4 are pre-decided to be the eligible atoms
+group          g1 id 2 4
+2 atoms in group g1
+
+#The distance cutoff is 0.4 nm and the angle is provided in the format {LowAngle} {HighAngle}
+#such that a bond is created if both the improper angles associated with the possible bond
+#are greater than {LowAngle} and lesser than {HighAngle}
+
+#If the angle values are increased to {100} and {180}, a bond will be created between atoms
+#2 and 4. To accept all angles, provide values such that {LowAngle} > {HighAngle}. An example is
+#{LowAngle} = 90 and {HighAngle} = 89
+
+fix	       f7 g1 bond/create 1 1 1 4 20 180 1 iparam 3 1 jparam 3 1 atype 1
+run            1
+Neighbor list info ...
+  2 neighbor list requests
+  update every 1 steps, delay 10 steps, check yes
+  max neighbors/atom: 2000, page size: 100000
+  master list distance cutoff = 14
+  ghost atom cutoff = 14
+  binsize = 7 -> bins = 2 1 1
+Memory usage per processor = 0.627373 Mbytes
+Step TotEng KinEng PotEng E_bond E_angle E_dihed E_impro 
+       0    1.6789598            0    1.6789598    1.6271865 0.0077031407            0            0 
+       1    1.6789598            0    1.6789598    1.6271865 0.0077031407            0            0 
+Loop time of 4.1008e-05 on 1 procs for 1 steps with 6 atoms
+
+Performance: 2106.906 ns/day, 0.011 hours/ns, 24385.488 timesteps/s
+0.0% CPU use with 1 MPI tasks x no OpenMP threads
+
+MPI task timing breakdown:
+Section |  min time  |  avg time  |  max time  |%varavg| %total
+---------------------------------------------------------------
+Pair    | 1.1921e-06 | 1.1921e-06 | 1.1921e-06 |   0.0 |  2.91
+Bond    | 9.5367e-07 | 9.5367e-07 | 9.5367e-07 |   0.0 |  2.33
+Neigh   | 0          | 0          | 0          |   0.0 |  0.00
+Comm    | 9.5367e-07 | 9.5367e-07 | 9.5367e-07 |   0.0 |  2.33
+Output  | 1.0014e-05 | 1.0014e-05 | 1.0014e-05 |   0.0 | 24.42
+Modify  | 2.5034e-05 | 2.5034e-05 | 2.5034e-05 |   0.0 | 61.05
+Other   |            | 2.861e-06  |            |       |  6.98
+
+Nlocal:    6 ave 6 max 6 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Nghost:    0 ave 0 max 0 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+Neighs:    9 ave 9 max 9 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+FullNghs:  18 ave 18 max 18 min
+Histogram: 1 0 0 0 0 0 0 0 0 0
+
+Total # of neighbors = 18
+Ave neighs/atom = 3
+Ave special neighs/atom = 2
+Neighbor list builds = 0
+Dangerous builds = 0
+unfix          f7
+
+#The final structure is final.data
+write_data     final.data
+Neighbor list info ...
+  1 neighbor list requests
+  update every 1 steps, delay 10 steps, check yes
+  max neighbors/atom: 2000, page size: 100000
+  master list distance cutoff = 14
+  ghost atom cutoff = 14
+  binsize = 7 -> bins = 2 1 1
+Total wall time: 0:00:00

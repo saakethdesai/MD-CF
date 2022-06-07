@@ -1,0 +1,43 @@
+#Input file for LAMMPS simulation that reads in an initial structure
+#and creates a bond between eligible atoms based on distance and angle
+#cutoffs provided
+
+units          real
+atom_style     full
+boundary       f f f 
+
+
+pair_style     lj/charmm/coul/charmm 10.0 12.0
+dielectric     1.0
+
+#The special_bonds command requires the extra keyword
+special_bonds  lj/coul 0.0 0.0 1.0 extra 10000 dihedral yes
+bond_style     harmonic
+angle_style    harmonic
+dihedral_style harmonic
+improper_style harmonic
+
+#The initial structure is initial.data
+read_data      initial.data
+timestep       1
+thermo_style   custom step etotal ke pe ebond eangle edihed eimp 
+thermo         1
+
+#Atom IDs 2 and 4 are pre-decided to be the eligible atoms
+group          g1 id 2 4
+
+#The distance cutoff is 0.4 nm and the angle is provided in the format {LowAngle} {HighAngle}
+#such that a bond is created if both the improper angles associated with the possible bond
+#are greater than {LowAngle} and lesser than {HighAngle}
+
+#If the angle values are increased to {100} and {180}, a bond will be created between atoms
+#2 and 4. To accept all angles, provide values such that {LowAngle} > {HighAngle}. An example is
+#{LowAngle} = 90 and {HighAngle} = 89
+
+fix	       f7 g1 bond/create 1 1 1 4 20 180 1 iparam 3 1 jparam 3 1 atype 1
+run            1
+unfix          f7
+
+#The final structure is final.data. The simulation output can be compared
+#with the log.nobond.lammps and log.withbond.lammps files provided for both scenarios
+write_data     final.data
