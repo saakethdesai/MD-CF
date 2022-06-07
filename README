@@ -1,0 +1,49 @@
+What is this?
+---------------
+This set of files and directories contains the code used to simulate the 
+crosslinking algorithm presented in our paper. This code was
+written by Saaketh Desai at Purdue University, under the guidance of 
+Prof. Alejandro Strachan.
+
+What are the contents of this distribution?
+-------------------------------------------
+README      A brief overview of the distribution
+code        Directory containing the source code and a sample executable
+examples    Directory containing test examples
+
+Installing this code
+---------------------
+To install this code, follow the steps below:
+
+1. Download the source code for LAMMPS to your local machine.
+   For details, please see the instructions provided in the following link:
+   lammps.sandia.gov/download.html
+
+2. Copy the files fix_bond_create.h and fix_bond_create.cpp, provided in the 
+   "code" directory of our distribution, to the MC sub-directory within
+   the src directory of the downloaded LAMMPS source code
+
+3. Build LAMMPS using the following commands (for a linux machine)
+   a. make yes-mc
+   b. make yes-molecule
+   c. make yes-user-diffraction
+   d. make mpi
+   For further information on building LAMMPS with additional packages for 
+   other systems, please visit the "Building LAMMPS" section of the LAMMPS 
+   documentation. The instructinons provided here only use the packages 
+   required to reproduce results presented in our paper
+
+4. If the build was successful, an executable "lmp_mpi" will be created in the
+   current directory. This executable can then be used to run lammps by replacing
+   "lmp < in.xx" with "/path/to/exectuable/lmp_mpi < in.xx" in your simulations
+   (quotes only for emphasis)
+
+Using this code
+----------------
+For instructions on using this code, please see the README file in the examples
+directory.
+
+Contacts
+---------
+If you have questions regarding this distribution or its use, please send an email
+to desai61@purdue.edu
